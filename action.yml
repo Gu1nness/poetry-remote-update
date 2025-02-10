@@ -66,7 +66,7 @@ runs:
       run: |
         for group in $(echo ${{ inputs.groups }} | jq -c '.[]'); do
           poetry remove ${{ inputs.library }} --group=$group
-          poetry add ${{ inputs.library }}==${{ inputs.new_version }} --group=$group
+          poetry add ${{ inputs.library }}=="${{ inputs.new_version }}" --group=$group
         done
     
     - name: Update SSH library
@@ -78,17 +78,23 @@ runs:
           poetry add ${{ inputs.ssh_library_url }} --group=$group
         done
 
-    - name: Compute branch name
+    - name: Compute revision (HTTP link)
       shell: bash
+      if:  inputs.ssh_private_key == '' && contains(inputs.new_version, '#')
       run: |
-        echo 'BRANCH_NAME="chore/update-${{ inputs.library }}-to-${{ inputs.new_version/\//- }}"' >> $GITHUB_ENV
-      id: compute-branch
+        echo 'NEW_REVISION=$(echo ${{ inputs.new_version }} | cut -d"#" -f2)' >> $GITHUB_ENV
+
+    - name: Compute revision (regular revision)
+      shell: bash
+      if: inputs.ssh_private_key != '' || !contains(inputs.new_version, '#')
+      run: |
+        echo 'NEW_REVISION=${{ inputs.new_version }} >> $GITHUB_ENV
       
     - name: Create pull request
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.pat }}
-        branch: '${{ env.BRANCH_NAME }}'
+        branch: 'chore/update-${{ inputs.library }}-to-${{ env.NEW_REVISION}}'
         commit-message: 'Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
         title: '[CI] Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
         body: 'This PR updates the ${{ inputs.library }} to ${{ inputs.new_version }} version.'
