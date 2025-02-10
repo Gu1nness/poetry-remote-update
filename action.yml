@@ -34,6 +34,9 @@ inputs:
     description: 'SSH url from the library to pull'
     required: false
     default: ''
+  draft:
+    description: 'Status of the PR (false, true or always-true)'
+    required: true
 
 runs:
 
@@ -99,3 +102,12 @@ runs:
         title: '[CI] Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
         body: 'This PR updates the ${{ inputs.library }} to ${{ inputs.new_version }} version.'
         base: ${{ inputs.branch }}
+        draft: ${{inputs.draft }}
+      id: cpr
+
+    - name: Setup outputs
+      shell: bash
+      run: |
+        echo "pull-request-number=${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_OUTPUT
+        echo "pull-request-url=${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_OUTPUT
+        echo "pull-request-operation=${{ steps.cpr.outputs.pull-request-operation }}" >> $GITHUB_OUTPUT
