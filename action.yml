@@ -10,6 +10,10 @@ inputs:
   new_version:  
     description: 'The new version to update to'
     required: true
+  groups:
+    description: 'A list of groups to update (as a json list)'
+    required: false
+    default: '["main"]'
   repository:
     description: 'The repository full name where to create the PR'
     required: true
@@ -38,7 +42,7 @@ runs:
   steps:
   
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repository }}
 
@@ -60,25 +64,32 @@ runs:
       if: ${{ inputs.ssh_private_key == '' }}
       shell: bash
       run: |
-        poetry remove ${{ inputs.library }}
-        poetry add ${{ inputs.library }}==${{ inputs.new_version }}
+        for group in $(echo ${{ inputs.groups }} | jq -c '.[]'); do
+          poetry remove ${{ inputs.library }} --group=$group
+          poetry add ${{ inputs.library }}==${{ inputs.new_version }} --group=$group
+        done
     
     - name: Update SSH library
       if: ${{ inputs.ssh_private_key != '' }}
       shell: bash
       run: |
-        poetry remove ${{ inputs.library }}
-        poetry add ${{ inputs.ssh_library_url }}
+        for group in $(echo ${{ inputs.groups }} | jq -c '.[]'); do
+          poetry remove ${{ inputs.library }} --group=$group
+          poetry add ${{ inputs.ssh_library_url }} --group=$group
+        done
+
+    - name: Compute branch name
+      shell: bash
+      run: |
+        echo 'BRANCH_NAME="chore/update-${{ inputs.library }}-to-${{ inputs.new_version/\//- }}"' >> $GITHUB_ENV
+      id: compute-branch
       
     - name: Create pull request
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.pat }}
-        branch: 'update-${{ inputs.library }}-to-${{ inputs.new_version }}'
+        branch: '${{ env.BRANCH_NAME }}'
         commit-message: 'Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
-        title: 'Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
+        title: '[CI] Update ${{ inputs.library }} to ${{ inputs.new_version }} version'
         body: 'This PR updates the ${{ inputs.library }} to ${{ inputs.new_version }} version.'
         base: ${{ inputs.branch }}
-
-
-    
