@@ -38,6 +38,17 @@ inputs:
     description: 'Status of the PR (false, true or always-true)'
     required: true
 
+outputs:
+  pull-request-number:
+    description: "The PR number"
+    value: ${{ steps.cpr.outputs.pull-request-number }}
+  pull-request-url:
+    description: "The PR URL"
+    value: ${{ steps.cpr.outputs.pull-request-url }}
+  pull-request-operation:
+    description: "The action operated on the PR"
+    value: ${{ steps.cpr.outputs.pull-request-operation }}
+
 runs:
 
   using: "composite"
