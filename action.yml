@@ -96,7 +96,7 @@ runs:
       shell: bash
       if:  inputs.ssh_private_key == '' && contains(inputs.new_version, '#')
       run: |
-        echo 'NEW_REVISION=$(echo ${{ inputs.new_version }} | cut -d"#" -f2)' >> $GITHUB_ENV
+        echo 'NEW_REVISION=$(echo ${{ inputs.new_version }} | cut -d"#" -f2 | sed s'/\//-/)' >> $GITHUB_ENV
 
     - name: Compute revision (regular revision)
       shell: bash
