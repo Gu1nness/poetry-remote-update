@@ -83,7 +83,7 @@ runs:
       run: |
         for group in $(echo ${{ inputs.groups }} | jq -c '.[]'); do
           poetry remove ${{ inputs.library }} --group=$group
-          poetry source add --priority=explicit testpypi https://test.pypi.org/simple/
+          poetry source add --priority=supplemental testpypi https://test.pypi.org/simple/
           poetry add ${{ inputs.library }}=="${{ inputs.new_version }}" --group=$group --source testpypi
         done
     
