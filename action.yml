@@ -20,6 +20,9 @@ inputs:
   branch:
     description: 'The branch where to create the PR to'
     required: true
+  new_branch:
+    description: 'The branch we need to create'
+    required: true
   python_version:
     description: 'The python version used on the repository'
     required: true
@@ -80,7 +83,8 @@ runs:
       run: |
         for group in $(echo ${{ inputs.groups }} | jq -c '.[]'); do
           poetry remove ${{ inputs.library }} --group=$group
-          poetry add ${{ inputs.library }}=="${{ inputs.new_version }}" --group=$group
+          poetry source add --priority=explicit testpypi https://test.pypi.org/simple/
+          poetry add ${{ inputs.library }}=="${{ inputs.new_version }}" --group=$group --source testpypi
         done
     
     - name: Update SSH library
@@ -92,17 +96,11 @@ runs:
           poetry add ${{ inputs.ssh_library_url }} --group=$group
         done
 
-    - name: Compute revision (HTTP link)
+    - name: Compute branch name
       shell: bash
-      if:  inputs.ssh_private_key == '' && contains(inputs.new_version, '#')
       run: |
-        echo 'NEW_REVISION=$(echo ${{ inputs.new_version }} | cut -d"#" -f2 | sed s'/\//-/)' >> $GITHUB_ENV
+        echo 'NEW_REVISION=$(echo ${{ inputs.new_branch}} | sed s'/\//-/)' >> $GITHUB_ENV
 
-    - name: Compute revision (regular revision)
-      shell: bash
-      if: inputs.ssh_private_key != '' || !contains(inputs.new_version, '#')
-      run: |
-        echo 'NEW_REVISION=${{ inputs.new_version }} >> $GITHUB_ENV
       
     - name: Create pull request
       uses: peter-evans/create-pull-request@v7
