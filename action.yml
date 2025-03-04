@@ -84,7 +84,7 @@ runs:
       run: |
         poetry source add --priority=supplemental testpypi https://test.pypi.org/simple/
         poetry remove ${{ inputs.library }}
-        for group in $(echo '${{ inputs.groups }}' | jq -c '.[]'); do
+        for group in $(echo '${{ inputs.groups }}' | jq -r -c '.[]'); do
           poetry add "${{ inputs.library }}==${{ inputs.new_version }}" --group $group --source testpypi
         done
     
