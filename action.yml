@@ -39,7 +39,8 @@ inputs:
     default: ''
   draft:
     description: 'Status of the PR (false, true or always-true)'
-    required: true
+    required: false
+    default: 'true'
 
 outputs:
   pull-request-number:
