@@ -85,7 +85,7 @@ runs:
         poetry source add --priority=supplemental testpypi https://test.pypi.org/simple/
         for group in $(echo '${{ inputs.groups }}' | jq -c '.[]'); do
           poetry remove ${{ inputs.library }} --group=$group
-          poetry add ${{ inputs.library }}=="${{ inputs.new_version }}" --group=$group --source testpypi
+          poetry add "${{ inputs.library }}==${{ inputs.new_version }}" --group $group --source testpypi
         done
     
     - name: Update SSH library
