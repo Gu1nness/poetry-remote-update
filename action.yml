@@ -83,8 +83,8 @@ runs:
       shell: bash
       run: |
         poetry source add --priority=supplemental testpypi https://test.pypi.org/simple/
+        poetry remove ${{ inputs.library }}
         for group in $(echo '${{ inputs.groups }}' | jq -c '.[]'); do
-          poetry remove ${{ inputs.library }} --group=$group
           poetry add "${{ inputs.library }}==${{ inputs.new_version }}" --group $group --source testpypi
         done
     
@@ -92,8 +92,8 @@ runs:
       if: ${{ inputs.ssh_private_key != '' }}
       shell: bash
       run: |
+        poetry remove ${{ inputs.library }}
         for group in $(echo '${{ inputs.groups }}' | jq -c '.[]'); do
-          poetry remove ${{ inputs.library }} --group=$group
           poetry add ${{ inputs.ssh_library_url }} --group=$group
         done
 
