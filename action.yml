@@ -99,7 +99,7 @@ runs:
     - name: Compute branch name
       shell: bash
       run: |
-        echo 'NEW_REVISION=$(echo ${{ inputs.new_branch}} | sed s'/\//-/)' >> $GITHUB_ENV
+        echo "NEW_REVISION=$(echo ${{ inputs.new_branch}} | sed s'/\//-/')" >> $GITHUB_ENV
 
       
     - name: Create pull request
